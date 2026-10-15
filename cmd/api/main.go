@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log/slog"
 	"os"
@@ -12,14 +11,9 @@ import (
 	sloggin "github.com/samber/slog-gin"
 
 	"gin_template/internal/env"
+	"gin_template/internal/handlers"
 	"gin_template/internal/logger"
 )
-
-type rootOutput struct {
-	Body struct {
-		Message string `json:"message" example:"Hello, world!"`
-	}
-}
 
 func main() {
 	log := logger.Setup()
@@ -37,15 +31,11 @@ func main() {
 		slog.Error("invalid trusted proxies", slog.Any("error", err))
 		os.Exit(1)
 	}
-	router.Use(sloggin.New(log), gin.Recovery())
+	// Probes are polled constantly, so keep them out of the request log.
+	router.Use(sloggin.NewWithFilters(log, sloggin.IgnorePath("/healthz", "/readyz")), gin.Recovery())
 
 	api := humagin.New(router, huma.DefaultConfig("Gin Template API", "1.0.0"))
-
-	huma.Get(api, "/", func(_ context.Context, _ *struct{}) (*rootOutput, error) {
-		out := &rootOutput{}
-		out.Body.Message = "Hello, world!"
-		return out, nil
-	})
+	handlers.Register(api)
 
 	addr := fmt.Sprintf(":%d", env.Port())
 	slog.Info("starting server", slog.String("addr", addr))
