@@ -8,17 +8,13 @@ import (
 
 const corsAllowedOriginsKey string = "CORS_ALLOWED_ORIGINS"
 
-// corsAllowedOriginsDefault allows no cross-origin requests: with no origins
-// configured the CORS middleware is not installed at all.
+// nil installs no CORS middleware.
 var corsAllowedOriginsDefault []string
 
 func CORSAllowedOrigins() []string {
 	return lookup(corsAllowedOriginsKey, corsAllowedOriginsDefault, parseCORSAllowedOrigins)
 }
 
-// parseCORSAllowedOrigins splits a comma-separated list of origins. Each must
-// be "*" or scheme://host[:port] with an http or https scheme and nothing
-// after the host, which is the form browsers send in the Origin header.
 func parseCORSAllowedOrigins(s string) ([]string, error) {
 	var origins []string
 	for _, entry := range strings.Split(s, ",") {

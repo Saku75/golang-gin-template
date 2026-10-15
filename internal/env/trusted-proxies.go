@@ -8,17 +8,13 @@ import (
 
 const trustedProxiesKey string = "TRUSTED_PROXIES"
 
-// trustedProxiesDefault trusts no proxies, so X-Forwarded-For is ignored and
-// the client IP is always the direct peer.
+// nil trusts no proxies.
 var trustedProxiesDefault []string
 
 func TrustedProxies() []string {
 	return lookup(trustedProxiesKey, trustedProxiesDefault, parseTrustedProxies)
 }
 
-// parseTrustedProxies splits a comma-separated list of IPs and CIDRs, the
-// forms gin.Engine.SetTrustedProxies accepts, and rejects anything else so a
-// typo falls back to trusting nothing rather than everything.
 func parseTrustedProxies(s string) ([]string, error) {
 	var proxies []string
 	for _, entry := range strings.Split(s, ",") {

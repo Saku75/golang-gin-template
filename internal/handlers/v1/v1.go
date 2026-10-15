@@ -1,11 +1,9 @@
-// Package v1 holds the handlers for version 1 of the API. Register mounts
-// them all under the /v1 prefix, so each handler declares only the path
-// below that.
+// Package v1 is version 1 of the API. Add a file per handler and register it
+// here; paths are relative to /v1.
 package v1
 
 import "github.com/danielgtaylor/huma/v2"
 
-// Register mounts every v1 handler on api under the /v1 prefix.
 func Register(api huma.API) {
 	group := huma.NewGroup(api, "/v1")
 	registerRoot(group)

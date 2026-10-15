@@ -27,15 +27,16 @@ func main() {
 	}
 }
 
+// run wires the application together. Start here to add middleware, readiness
+// checks, or anything that needs the application's lifetime context.
 func run() error {
 	log := logger.Setup()
 
-	// SIGINT and SIGTERM cancel ctx, which fails the readiness probe and
-	// starts a graceful shutdown.
+	// ctx ends on SIGINT or SIGTERM, which starts the graceful shutdown.
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	// Must run before gin.New so the mode applies to the engine's setup.
+	// gin.SetMode must run before gin.New.
 	switch env.Mode() {
 	case env.ModeRelease, env.ModeStaging:
 		gin.SetMode(gin.ReleaseMode)
@@ -47,11 +48,8 @@ func run() error {
 	if err := router.SetTrustedProxies(env.TrustedProxies()); err != nil {
 		return fmt.Errorf("set trusted proxies: %w", err)
 	}
-	// Probes are polled constantly, so keep them out of the request log.
 	router.Use(sloggin.NewWithFilters(log, sloggin.IgnorePath("/healthz", "/readyz")), gin.Recovery())
 
-	// With no origins configured no CORS headers are sent, so browsers on
-	// other origins are refused. "*" allows every origin.
 	if origins := env.CORSAllowedOrigins(); len(origins) > 0 {
 		cfg := cors.DefaultConfig()
 		cfg.AllowOrigins = origins
@@ -60,6 +58,7 @@ func run() error {
 	}
 
 	api := humagin.New(router, huma.DefaultConfig("Gin Template API", "1.0.0"))
+	// Readiness checks go here; see handlers.Check.
 	handlers.Register(ctx, api)
 
 	return server.Run(ctx, server.Config{

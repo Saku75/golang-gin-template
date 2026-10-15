@@ -1,10 +1,10 @@
 #:schema https://json.schemastore.org/any.json
-# Config for Air (https://github.com/air-verse/air). Run with: go tool air
+# Live reload for development. Run with: go tool air
 
 root = "."
 tmp_dir = "tmp"
 
-# Loaded into the app's environment on every (re)start. Missing files are ignored.
+# Loaded into the app's environment on every restart. A missing file is ignored.
 env_files = [".env"]
 
 [build]

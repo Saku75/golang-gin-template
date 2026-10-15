@@ -17,7 +17,7 @@ func registerRoot(api huma.API) {
 	huma.Register(api, huma.Operation{
 		OperationID: "v1-root",
 		Method:      http.MethodGet,
-		Path:        "", // The group's /v1 prefix is the whole path.
+		Path:        "", // Empty: the route is the /v1 prefix itself.
 		Summary:     "API v1 root",
 		Tags:        []string{"v1"},
 	}, func(_ context.Context, _ *struct{}) (*rootOutput, error) {

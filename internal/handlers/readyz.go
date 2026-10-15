@@ -8,10 +8,8 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 )
 
-// Check is a readiness probe for one dependency, such as a database or an
-// upstream service. Run returns nil when the dependency is ready. It receives
-// the request context, so it should honor cancellation and apply its own
-// timeout where the dependency does not. Names must be unique.
+// Check is one readiness check. Run returns nil while its dependency is
+// ready and should respect ctx. Names must be unique.
 type Check struct {
 	Name string
 	Run  func(ctx context.Context) error

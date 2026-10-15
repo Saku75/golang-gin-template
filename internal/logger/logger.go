@@ -11,18 +11,9 @@ import (
 	"gin_template/internal/env"
 )
 
-// Setup reads LOG_FORMAT and LOG_LEVEL from the environment, builds a logger
-// that writes to stderr, and installs it as the slog default so that
-// package-level calls such as slog.Info use it from then on. The logger is
-// also returned so it can be handed to anything that takes one explicitly,
-// such as request-logging middleware.
-//
-// Anything logged while the environment is read, such as the env package
-// reporting a missing variable, is buffered and replayed through the new
-// logger, so every line of output uses the configured format and level.
-//
-// Gin's own debug-mode output is routed through the logger at debug level,
-// so it never bypasses the configured format.
+// Setup configures slog from LOG_FORMAT and LOG_LEVEL, installs it as the
+// default logger, and returns it. Call it first: anything logged before it
+// finishes is replayed through the configured logger.
 func Setup() *slog.Logger {
 	replay := newReplayHandler()
 	slog.SetDefault(slog.New(replay))
@@ -42,6 +33,7 @@ func Setup() *slog.Logger {
 	slog.SetDefault(l)
 	replay.replay(handler)
 
+	// Gin's own debug output goes through slog as well.
 	gin.DebugPrintFunc = func(format string, values ...any) {
 		l.Debug(strings.TrimSpace(fmt.Sprintf(format, values...)))
 	}

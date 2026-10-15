@@ -1,4 +1,4 @@
-// Package server runs the HTTP server and handles its graceful shutdown.
+// Package server runs the HTTP server with graceful shutdown.
 package server
 
 import (
@@ -10,34 +10,23 @@ import (
 )
 
 const (
-	// readHeaderTimeout bounds how long a client may take to send the request
-	// headers, which closes the door on slowloris-style connections.
 	readHeaderTimeout = 10 * time.Second
 	readTimeout       = 1 * time.Minute
-	// writeTimeout caps the time from the end of the request headers to the
-	// end of the response. Raise it, or remove it, for streaming endpoints.
-	writeTimeout = 1 * time.Minute
-	idleTimeout  = 2 * time.Minute
-	// shutdownTimeout is how long in-flight requests get to finish once the
-	// listener has closed before their connections are cut.
-	shutdownTimeout = 15 * time.Second
+	writeTimeout      = 1 * time.Minute // Caps response time; raise for streaming endpoints.
+	idleTimeout       = 2 * time.Minute
+	shutdownTimeout   = 15 * time.Second // Time in-flight requests get after the listener closes.
 )
 
-// Config describes what Run serves and how it shuts down.
 type Config struct {
 	Addr    string
 	Handler http.Handler
-	// DrainDelay is how long to keep serving after a shutdown has been
-	// requested before closing the listener. The readiness probe already
-	// fails during this window, so load balancers can stop routing new
-	// requests here before connections are refused. Zero skips the wait.
+	// DrainDelay keeps the server serving after shutdown is requested, while
+	// /readyz already fails, so load balancers can stop routing here first.
 	DrainDelay time.Duration
 }
 
-// Run serves cfg.Handler on cfg.Addr until ctx is cancelled. It then keeps
-// serving for cfg.DrainDelay, stops accepting connections, and waits up to
-// shutdownTimeout for in-flight requests to finish. It returns nil after a
-// clean shutdown, and the listen or shutdown error otherwise.
+// Run serves until ctx is cancelled, then drains and shuts down. The README's
+// Shutdown section describes the sequence.
 func Run(ctx context.Context, cfg Config) error {
 	srv := &http.Server{
 		Addr:              cfg.Addr,
@@ -56,7 +45,6 @@ func Run(ctx context.Context, cfg Config) error {
 
 	select {
 	case err := <-errc:
-		// ListenAndServe only returns before a shutdown when it failed.
 		return fmt.Errorf("listen on %s: %w", cfg.Addr, err)
 	case <-ctx.Done():
 	}
@@ -72,7 +60,7 @@ func Run(ctx context.Context, cfg Config) error {
 	if err := srv.Shutdown(shutdownCtx); err != nil {
 		return fmt.Errorf("shutdown: %w", err)
 	}
-	<-errc // ListenAndServe returns http.ErrServerClosed once Shutdown begins.
+	<-errc // ListenAndServe returns once Shutdown begins.
 
 	slog.Info("server stopped")
 	return nil

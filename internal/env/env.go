@@ -1,3 +1,7 @@
+// Package env reads configuration from environment variables. Each variable
+// has its own file; copy one to add another. Enum-like variables use an
+// unexported type with exported constants so the accessor can carry the
+// variable's name; compare results against the constants.
 package env
 
 import (

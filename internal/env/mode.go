@@ -5,9 +5,6 @@ import (
 	"strings"
 )
 
-// mode selects how the application behaves at runtime. The type is unexported
-// so that Mode can be the accessor, matching Port, LogLevel and LogFormat;
-// callers compare the result against the Mode* constants.
 type mode string
 
 const (
@@ -29,7 +26,6 @@ func Mode() mode {
 	})
 }
 
-// UnmarshalText parses a mode name case-insensitively, mirroring slog.Level.
 func (m *mode) UnmarshalText(text []byte) error {
 	switch parsed := mode(strings.ToLower(string(text))); parsed {
 	case ModeDevelopment, ModeStaging, ModeRelease:

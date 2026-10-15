@@ -10,9 +10,6 @@ const (
 	shutdownDelayDefault time.Duration = 15 * time.Second
 )
 
-// ShutdownDelay is how long the server keeps serving after a shutdown has
-// been requested, so load balancers can observe the failing readiness probe
-// before connections are refused.
 func ShutdownDelay() time.Duration {
 	return lookup(shutdownDelayKey, shutdownDelayDefault, parseShutdownDelay)
 }

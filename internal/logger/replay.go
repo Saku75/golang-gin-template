@@ -6,6 +6,7 @@ import (
 	"sync"
 )
 
+// replayHandler buffers records until the configured handler exists.
 type replayHandler struct {
 	buf *replayBuffer
 	ops []func(slog.Handler) slog.Handler
