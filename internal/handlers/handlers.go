@@ -4,16 +4,21 @@
 package handlers
 
 import (
+	"context"
+
 	"github.com/danielgtaylor/huma/v2"
 
 	"gin_template/internal/handlers/v1"
 )
 
-// Register mounts every handler on api. The checks are run by the readiness
-// probe; pass one per dependency the service needs before it can take
-// traffic.
-func Register(api huma.API, checks ...Check) {
+// Register mounts every handler on api.
+//
+// lifetime is the application's context. Once it is cancelled the readiness
+// probe answers 503, so load balancers stop routing new requests here while
+// the server drains. The checks are also run by the readiness probe; pass one
+// per dependency the service needs before it can take traffic.
+func Register(lifetime context.Context, api huma.API, checks ...Check) {
 	registerHealthz(api)
-	registerReadyz(api, checks)
+	registerReadyz(lifetime, api, checks)
 	v1.Register(api)
 }

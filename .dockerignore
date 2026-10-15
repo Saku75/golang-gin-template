@@ -1,0 +1,5 @@
+# The Dockerfile copies only the paths it needs. This just keeps the build
+# context sent to the daemon small.
+.git
+bin/
+tmp/

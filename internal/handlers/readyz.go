@@ -24,16 +24,20 @@ type readyzOutput struct {
 	}
 }
 
-func registerReadyz(api huma.API, checks []Check) {
+func registerReadyz(lifetime context.Context, api huma.API, checks []Check) {
 	huma.Register(api, huma.Operation{
 		OperationID: "readyz",
 		Method:      http.MethodGet,
 		Path:        "/readyz",
 		Summary:     "Readiness probe",
-		Description: "Runs every readiness check. Returns 200 when all pass, or 503 listing each check that failed.",
+		Description: "Runs every readiness check. Returns 200 when all pass, or 503 listing each check that failed. Also returns 503 once the service has started shutting down.",
 		Tags:        []string{"Health"},
 		Errors:      []int{http.StatusServiceUnavailable},
 	}, func(ctx context.Context, _ *struct{}) (*readyzOutput, error) {
+		if lifetime.Err() != nil {
+			return nil, huma.Error503ServiceUnavailable("service is shutting down")
+		}
+
 		results := make([]error, len(checks))
 		var wg sync.WaitGroup
 		for i, check := range checks {
