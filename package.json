@@ -1,0 +1,14 @@
+{
+  "name": "gin_template",
+  "scripts": {
+    "dev": "go tool air",
+    "build": "go generate ./... && go build -o bin/api ./cmd/api",
+    "start": "./bin/api",
+    "generate": "go generate ./...",
+    "test": "go test ./...",
+    "vet": "go vet ./...",
+    "fmt": "gofmt -l -w cmd internal",
+    "tidy": "go mod tidy",
+    "docker:build": "docker build -t api ."
+  }
+}

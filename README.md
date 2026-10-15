@@ -24,9 +24,12 @@ Requires Go 1.27 or newer.
    ```
 
    `.env` is loaded by Air only. For `go run ./cmd/api`, set the variables in
-   the shell.
+   the shell and run `go generate ./...` once first; Air does that for you.
 
 3. Open <http://localhost:8080/docs>.
+
+The same commands are available as scripts in `package.json` for pnpm and
+Turborepo setups, for example `pnpm dev`, `pnpm build`, and `pnpm test`.
 
 Routes out of the box:
 
@@ -44,7 +47,7 @@ Routes out of the box:
 ```
 cmd/api/main.go     Wires everything together. Add middleware and readiness checks here.
 internal/env/       One file per environment variable. Copy one to add another.
-internal/handlers/  Probes, plus one subpackage per API version. Add routes in v1/.
+internal/handlers/  Probes, the docs page, and one subpackage per API version. Add routes in v1/.
 internal/logger/    slog setup from LOG_LEVEL and LOG_FORMAT.
 internal/server/    HTTP server timeouts and the shutdown sequence.
 ```
@@ -93,6 +96,15 @@ when the value is missing or invalid.
 Add a subpackage next to `internal/handlers/v1` and mount it from
 `handlers.Register`.
 
+## API docs
+
+`/docs` is served from the Stoplight Elements files embedded in the binary, so
+it works with no internet access. `go generate` fetches them as the npm package
+into `internal/handlers/docs/assets`, verified against the registry's integrity
+hash, from the registry in `NPM_REGISTRY`. The default is the public registry,
+and any other npm registry works. The version is pinned in
+`internal/handlers/docs/fetch.go`.
+
 ## Configuration
 
 | Variable               | Default       | Description                                                                  |
@@ -115,7 +127,12 @@ docker run --rm -p 8080:8080 api
 ```
 
 The image runs in release mode with JSON logs. Override any variable with
-`-e`, for example `-e LOG_LEVEL=debug`.
+`-e`, for example `-e LOG_LEVEL=debug`. To fetch the docs assets from a
+different npm registry:
+
+```sh
+docker build --build-arg NPM_REGISTRY=https://registry.example.com -t api .
+```
 
 ### Shutdown
 

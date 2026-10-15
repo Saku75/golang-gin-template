@@ -57,7 +57,9 @@ func run() error {
 		router.Use(cors.New(cfg))
 	}
 
-	api := humagin.New(router, huma.DefaultConfig("Gin Template API", "1.0.0"))
+	cfg := huma.DefaultConfig("Gin Template API", "1.0.0")
+	cfg.DocsPath = "" // Served from embedded files instead; see handlers/docs.
+	api := humagin.New(router, cfg)
 	// Readiness checks go here; see handlers.Check.
 	handlers.Register(ctx, api)
 

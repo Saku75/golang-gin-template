@@ -8,6 +8,8 @@ tmp_dir = "tmp"
 env_files = [".env"]
 
 [build]
+# Fetches the docs assets once; a no-op when they are present.
+pre_cmd = ["go generate ./internal/handlers/docs"]
 cmd = "go build -o ./tmp/api ./cmd/api"
 bin = "tmp/api"
 entrypoint = ["./tmp/api"]

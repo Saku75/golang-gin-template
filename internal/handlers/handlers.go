@@ -1,5 +1,5 @@
-// Package handlers holds the HTTP handlers. The probes live here; routes live
-// in one subpackage per API version, starting with v1.
+// Package handlers holds the HTTP handlers. The probes live here, the docs
+// page in docs, and routes in one subpackage per API version, starting with v1.
 package handlers
 
 import (
@@ -7,6 +7,7 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 
+	"gin_template/internal/handlers/docs"
 	"gin_template/internal/handlers/v1"
 )
 
@@ -16,5 +17,6 @@ import (
 func Register(lifetime context.Context, api huma.API, checks ...Check) {
 	registerHealthz(api)
 	registerReadyz(lifetime, api, checks)
+	docs.Register(api)
 	v1.Register(api)
 }
