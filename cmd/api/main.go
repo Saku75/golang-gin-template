@@ -24,7 +24,19 @@ type rootOutput struct {
 func main() {
 	log := logger.Setup()
 
+	// Must run before gin.New so the mode applies to the engine's setup.
+	switch env.Mode() {
+	case env.ModeRelease, env.ModeStaging:
+		gin.SetMode(gin.ReleaseMode)
+	default:
+		gin.SetMode(gin.DebugMode)
+	}
+
 	router := gin.New()
+	if err := router.SetTrustedProxies(env.TrustedProxies()); err != nil {
+		slog.Error("invalid trusted proxies", slog.Any("error", err))
+		os.Exit(1)
+	}
 	router.Use(sloggin.New(log), gin.Recovery())
 
 	api := humagin.New(router, huma.DefaultConfig("Gin Template API", "1.0.0"))
