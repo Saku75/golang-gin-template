@@ -1,0 +1,29 @@
+#:schema https://json.schemastore.org/any.json
+# Config for Air (https://github.com/air-verse/air). Run with: go tool air
+
+root = "."
+tmp_dir = "tmp"
+
+# Loaded into the app's environment on every (re)start. Missing files are ignored.
+env_files = [".env"]
+
+[build]
+cmd = "go build -o ./tmp/api ./cmd/api"
+bin = "tmp/api"
+entrypoint = ["./tmp/api"]
+
+include_ext = ["go"]
+include_file = [".env"]
+exclude_dir = ["tmp", "vendor", "testdata"]
+exclude_regex = ["_test\\.go"]
+exclude_unchanged = true
+
+# Keep the old binary running if a rebuild fails.
+stop_on_error = true
+
+[log]
+time = false
+main_only = false
+
+[misc]
+clean_on_exit = true
